@@ -58,14 +58,17 @@
     <Reference Include="AcCoreMgd">
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
+      <HintPath>C:\Program Files\Autodesk\AutoCAD 2024\accoremgd.dll</HintPath>
     </Reference>
     <Reference Include="AcDbMgd">
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
+      <HintPath>C:\Program Files\Autodesk\AutoCAD 2024\acdbmgd.dll</HintPath>
     </Reference>
     <Reference Include="AcMgd">
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
+      <HintPath>C:\Program Files\Autodesk\AutoCAD 2024\acmgd.dll</HintPath>
     </Reference>
     <!--ACA References Begin-->
     <!--ACA Refences End-->
