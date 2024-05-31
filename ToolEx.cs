@@ -1,5 +1,6 @@
 ﻿using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
+using Autodesk.AutoCAD.Windows.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -105,6 +106,23 @@ namespace ToolEx
             }
             return ObjectId.Null;
         }
+
+        public static ObjectIdCollection Offset(this ObjectId id, double distance)
+        {
+            if (!id.IsNull) return new ObjectIdCollection();
+
+            Curve curve = id.GetObject(OpenMode.ForRead) as Curve;
+            if (curve == null) return new ObjectIdCollection();
+
+            DBObjectCollection offsetCurves = curve.GetOffsetCurves(distance);
+            if (offsetCurves == null || offsetCurves.Count == 0) return new ObjectIdCollection();
+
+            Entity[] offsetEnts = new Entity[offsetCurves.Count];
+            offsetCurves.CopyTo(offsetEnts, 0);
+
+            return id.Database.PostToModelSpace(offsetEnts);
+        }
+
 
     }
 }

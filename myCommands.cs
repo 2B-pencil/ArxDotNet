@@ -8,17 +8,15 @@ using Autodesk.AutoCAD.Runtime;
 using System;
 using System.Windows;
 using ToolEx;
+using Autodesk.AutoCAD.ApplicationServices;
+
+
 // This line is not mandatory, but improves loading performances
 [assembly: CommandClass(typeof(ArxDotNet.CommondDemo))]
 
 
 namespace ArxDotNet
 {
-
-    // This class is instantiated by AutoCAD for each document when
-    // a command is called by the user the first time in the context
-    // of a given document. In other words, non static data in this class
-    // is implicitly per-document!
 
     public class CommondDemo
     {
@@ -93,7 +91,18 @@ namespace ArxDotNet
             Point3d ptStart = new Point3d(0, 0, 0);
             Point3d ptEnd = new Point3d(100, 100, 0);
             Line line = new Line(ptStart, ptEnd);
-            db.PostToModelSpace(line);
+            ObjectId lineId = db.PostToModelSpace(line);
+
+            db.DimAssoc = 2;
+            AlignedDimension dimension = new AlignedDimension();
+            dimension.XLine1Point = ptStart;
+            dimension.XLine2Point = ptEnd;
+
+            dimension.DimLinePoint = new Point3d(45, 55, 0);
+            dimension.DimensionStyle = db.Dimstyle;
+            dimension.OwnerId = lineId;
+            db.PostToModelSpace(dimension);
+
         }
 
         [CommandMethod(nameof (SecondLine))]
@@ -122,6 +131,44 @@ namespace ArxDotNet
                 }
 
             }
+        }
+
+        [CommandMethod(nameof(TransDemo))]
+        public void TransDemo()
+        {
+            Document doc = App.Application.DocumentManager.MdiActiveDocument;
+            Database db = doc.Database;
+            Autodesk.AutoCAD.DatabaseServices.TransactionManager tm = db.TransactionManager;
+
+            using (Transaction tran1 = tm.StartTransaction())
+            {
+                Point3d ptStart = Point3d.Origin;
+                Point3d ptEnd = new Point3d(100, 0, 0);
+                Line line = new Line(ptStart, ptEnd);
+                ObjectId id = db.PostToModelSpace(line);
+
+                using (Transaction tran2 = tm.StartTransaction())
+                {
+                    line.UpgradeOpen();
+                    line.ColorIndex = 1;
+                    ObjectId copyId = id.TransformCopy(Matrix3d.Rotation(Math.PI * 0.5, Vector3d.ZAxis, ptStart));
+
+                    using (Transaction trans3 = tm.StartTransaction())
+                    {
+                        Line line2 = trans3.GetObject(copyId, OpenMode.ForWrite) as Line;
+
+                        line2.ColorIndex = 3;
+
+                        trans3.Abort();
+
+                    }
+
+                    tran2.Commit();
+                }
+
+                tran1.Commit();
+            }
+
         }
 
     }
